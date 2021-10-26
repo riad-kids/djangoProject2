@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import views as auth_views
 from django.urls import resolve, reverse
 from django.test import TestCase
+from accounts import views
 
 
 class PasswordChangeTests(TestCase):
@@ -10,7 +11,7 @@ class PasswordChangeTests(TestCase):
         username = 'john'
         password = 'secret123'
         user = User.objects.create_user(username=username, email='john@doe.com', password=password)
-        url = reverse('password_change')
+        url = reverse('accounts:password_change')
         self.client.login(username=username, password=password)
         self.response = self.client.get(url)
 
@@ -19,7 +20,7 @@ class PasswordChangeTests(TestCase):
 
     def test_url_resolves_correct_view(self):
         view = resolve('/settings/password/')
-        self.assertEquals(view.func.view_class, auth_views.PasswordChangeView)
+        self.assertEquals(view.func.view_class, views.UserPasswordChangeView)
 
     def test_csrf(self):
         self.assertContains(self.response, 'csrfmiddlewaretoken')
@@ -38,8 +39,8 @@ class PasswordChangeTests(TestCase):
 
 class LoginRequiredPasswordChangeTests(TestCase):
     def test_redirection(self):
-        url = reverse('password_change')
-        login_url = reverse('login')
+        url = reverse('accounts:password_change')
+        login_url = reverse('accounts:login')
         response = self.client.get(url)
         self.assertRedirects(response, f'{login_url}?next={url}')
 
@@ -51,7 +52,7 @@ class PasswordChangeTestCase(TestCase):
     """
     def setUp(self, data={}):
         self.user = User.objects.create_user(username='john', email='john@doe.com', password='old_password')
-        self.url = reverse('password_change')
+        self.url = reverse('accounts:password_change')
         self.client.login(username='john', password='old_password')
         self.response = self.client.post(self.url, data)
 
@@ -68,7 +69,7 @@ class SuccessfulPasswordChangeTests(PasswordChangeTestCase):
         """
         A valid form submission should redirect the user
         """
-        self.assertRedirects(self.response, reverse('password_change_done'))
+        self.assertRedirects(self.response, reverse('accounts:password_change_done'))
 
     def test_password_changed(self):
         """

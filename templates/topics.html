@@ -13,7 +13,7 @@
 
 {% block content %}
   <div class="mb-4">
-    <a href="{% url 'new_topic' board.pk %}" class="btn btn-primary">New topic</a>
+    <a href="{% url 'boards:new_topic' board.pk %}" class="btn btn-primary">New topic</a>
   </div>
 
   <table class="table table-striped mb-4">
@@ -28,7 +28,7 @@
     </thead>
     <tbody>
       {% for topic in topics %}
-        {% url 'topic_posts' board.pk topic.pk as topic_url %}
+        {% url 'boards:topic_posts' board.pk topic.pk as topic_url %}
         <tr>
           <td>
             <p class="mb-0">

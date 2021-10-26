@@ -7,7 +7,7 @@ from django.test import TestCase
 class PasswordResetMailTests(TestCase):
     def setUp(self):
         User.objects.create_user(username='riadjj', email='riadjj@naver.com', password='1234')
-        self.response = self.client.post(reverse('password_reset'), {'email': 'riadjj@naver.com'})
+        self.response = self.client.post(reverse('accounts:password_reset'), {'email': 'riadjj@naver.com'})
         self.email = mail.outbox[0]
 
     def test_email_subject(self):
@@ -17,7 +17,7 @@ class PasswordResetMailTests(TestCase):
         context = self.response.context
         token = context.get('token')
         uid = context.get('uid')
-        password_reset_token_url = reverse('password_reset_confirm', kwargs={
+        password_reset_token_url = reverse('accounts:password_reset_confirm', kwargs={
             'uidb64': uid,
             'token': token
         })

@@ -19,7 +19,7 @@ class PostUpdateViewTestCase(TestCase):
         user = User.objects.create_user(username=self.username, email='john@doe.com', password=self.password)
         self.topic = Topic.objects.create(subject='Hello, world', board=self.board, starter=user)
         self.post = Post.objects.create(message='Lorem ipsum dolor sit amet', topic=self.topic, created_by=user)
-        self.url = reverse('edit_post', kwargs={
+        self.url = reverse('boards:edit_post', kwargs={
             'pk': self.board.pk,
             'topic_pk': self.topic.pk,
             'post_pk': self.post.pk
@@ -28,7 +28,7 @@ class PostUpdateViewTestCase(TestCase):
 
 class LoginRequiredPostUpdateViewTests(PostUpdateViewTestCase):
     def test_redirection(self):
-        login_url = reverse('login')
+        login_url = reverse('accounts:login')
         response = self.client.get(self.url)
         self.assertRedirects(response, '{login_url}?next={url}'.format(login_url=login_url, url=self.url))
 
@@ -88,7 +88,7 @@ class SuccessfulPostUpdateViewTests(PostUpdateViewTestCase):
         """
         A valid form submission should redirect the user
         """
-        topic_posts_url = reverse('topic_posts', kwargs={'pk': self.board.pk, 'topic_pk': self.topic.pk})
+        topic_posts_url = reverse('boards:topic_posts', kwargs={'pk': self.board.pk, 'topic_pk': self.topic.pk})
         self.assertRedirects(self.response, topic_posts_url)
 
     def test_post_changed(self):

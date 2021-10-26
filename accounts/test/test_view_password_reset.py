@@ -4,11 +4,12 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.urls import resolve, reverse
 from django.test import TestCase
+from accounts import views
 
 
 class PasswordResetTests(TestCase):
     def setUp(self):
-        url = reverse('password_reset')
+        url = reverse('accounts:password_reset')
         self.response = self.client.get(url)
 
     def test_status_code(self):
@@ -16,7 +17,7 @@ class PasswordResetTests(TestCase):
 
     def test_view_function(self):
         view = resolve('/reset/')
-        self.assertEquals(view.func.view_class, auth_views.PasswordResetView)
+        self.assertEquals(view.func.view_class, views.UserPasswordResetView)
 
     def test_csrf(self):
         self.assertContains(self.response, 'csrfmiddlewaretoken')
@@ -37,14 +38,14 @@ class SuccessfulPasswordResetTests(TestCase):
     def setUp(self):
         email = 'riadjj@naver.com'
         User.objects.create_user(username='riad4', email=email, password='fldkem!!')
-        url = reverse('password_reset')
+        url = reverse('accounts:password_reset')
         self.response = self.client.post(url, {'email': email})
 
     def test_redirection(self):
         """
         A valid form submission should redirect the user to `password_reset_done` view
         """
-        url = reverse('password_reset_done')
+        url = reverse('accounts:password_reset_done')
         self.assertRedirects(self.response, url)
 
     def test_send_password_reset_email(self):
@@ -53,7 +54,7 @@ class SuccessfulPasswordResetTests(TestCase):
 
 class InvalidPasswordResetTests(TestCase):
     def setUp(self):
-        url = reverse('password_reset')
+        url = reverse('accounts:password_reset')
         self.response = self.client.post(url, {'email': 'donotexist@email.com'})
 
     def test_redirection(self):
@@ -61,7 +62,7 @@ class InvalidPasswordResetTests(TestCase):
         Even invalid emails in the database should
         redirect the user to `password_reset_done` view
         """
-        url = reverse('password_reset_done')
+        url = reverse('accounts:password_reset_done')
         self.assertRedirects(self.response, url)
 
     def test_no_reset_email_sent(self):
@@ -70,7 +71,7 @@ class InvalidPasswordResetTests(TestCase):
 
 class PasswordResetCompleteTests(TestCase):
     def setUp(self):
-        url = reverse('password_reset_complete')
+        url = reverse('accounts:password_reset_complete')
         self.response = self.client.get(url)
 
     def test_status_code(self):
@@ -78,4 +79,4 @@ class PasswordResetCompleteTests(TestCase):
 
     def test_view_function(self):
         view = resolve('/reset/complete/')
-        self.assertEquals(view.func.view_class, auth_views.PasswordResetCompleteView)
+        self.assertEquals(view.func.view_class, views.UserPasswordResetCompleteView)

@@ -7,7 +7,7 @@ from accounts.forms import SignUpForm
 
 class SignUpTests(TestCase):
     def setUp(self):
-        url = reverse('signup')
+        url = reverse('accounts:signup')
         self.response = self.client.get(url)
 
     def test_signup_status_code(self):
@@ -37,7 +37,7 @@ class SignUpTests(TestCase):
 
 class SuccessfulSignUpTests(TestCase):
     def setUp(self):
-        url = reverse('signup')
+        url = reverse('accounts:signup')
         data = {
             'username': 'john',
             'email': 'john@doe.com',
@@ -68,7 +68,7 @@ class SuccessfulSignUpTests(TestCase):
 
 class InvalidSignUpTests(TestCase):
     def setUp(self):
-        url = reverse('signup')
+        url = reverse('accounts:signup')
         self.response = self.client.post(url, {})
 
     def test_signup_status_code(self):

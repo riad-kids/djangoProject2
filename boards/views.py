@@ -101,7 +101,7 @@ def new_topic(request, pk):
                 topic=topic,
                 created_by=request.user
             )
-            return redirect('topic_posts', pk=pk, topic_pk=topic.pk)
+            return redirect('boards:topic_posts', pk=pk, topic_pk=topic.pk)
     else:
         form = NewTopicForm()
     return render(request, 'new_topic.html', {'board': board, 'form': form})
@@ -128,7 +128,7 @@ class TopicCreateView(CreateView):
             topic=topic,
             created_by=self.request.user
         )
-        return redirect('topic_posts', pk=self.kwargs.get('pk'), topic_pk=topic.pk)
+        return redirect('boards:topic_posts', pk=self.kwargs.get('pk'), topic_pk=topic.pk)
 
 
 """
@@ -144,7 +144,7 @@ def reply_topic(request, pk, topic_pk):
             post.save()
             topic.last_updated = timezone.now()
             topic.save()
-            topic_url = reverse('topic_posts', kwargs={'pk': pk, 'topic_pk': topic_pk})
+            topic_url = reverse('boards:topic_posts', kwargs={'pk': pk, 'topic_pk': topic_pk})
             topic_post_url = '{url}?page={page}#{id}'.format(
                 url=topic_url,
                 id=post.pk,
@@ -175,7 +175,7 @@ class ReplyTopicView(CreateView):
         post.save()
         topic.last_updated = timezone.now()
         topic.save()
-        topic_url = reverse('topic_posts', kwargs={'pk': self.kwargs.get('pk'),
+        topic_url = reverse('boards:topic_posts', kwargs={'pk': self.kwargs.get('pk'),
                                                    'topic_pk': self.kwargs.get('topic_pk')})
         topic_post_url = '{url}?page={page}#{id}'.format(
             url=topic_url,
@@ -202,4 +202,4 @@ class PostUpdateView(UpdateView):
         post.updated_by = self.request.user
         post.updated_at = timezone.now()
         post.save()
-        return redirect('topic_posts', pk=post.topic.board.pk, topic_pk=post.topic.pk)
+        return redirect('boards:topic_posts', pk=post.topic.board.pk, topic_pk=post.topic.pk)

@@ -18,12 +18,12 @@ class ReplyTopicTestCase(TestCase):
         user = User.objects.create_user(username=self.username, email='john@doe.com', password=self.password)
         self.topic = Topic.objects.create(subject='Hello, world', board=self.board, starter=user)
         Post.objects.create(message='Lorem ipsum dolor sit amet', topic=self.topic, created_by=user)
-        self.url = reverse('reply_topic', kwargs={'pk': self.board.pk, 'topic_pk': self.topic.pk})
+        self.url = reverse('boards:reply_topic', kwargs={'pk': self.board.pk, 'topic_pk': self.topic.pk})
 
 
 class LoginRequiredReplyTopicTests(ReplyTopicTestCase):
     def test_redirection(self):
-        login_url = reverse('login')
+        login_url = reverse('accounts:login')
         response = self.client.get(self.url)
         self.assertRedirects(response, '{login_url}?next={url}'.format(login_url=login_url, url=self.url))
 
@@ -66,7 +66,7 @@ class SuccessfulReplyTopicTests(ReplyTopicTestCase):
         """
         A valid form submission should redirect the user
         """
-        topic_posts_url = reverse('topic_posts', kwargs={'pk': self.board.pk, 'topic_pk': self.topic.pk})
+        topic_posts_url = reverse('boards:topic_posts', kwargs={'pk': self.board.pk, 'topic_pk': self.topic.pk})
         self.assertRedirects(self.response, topic_posts_url)
 
     def test_reply_created(self):
@@ -81,7 +81,7 @@ class SuccessfulReplyTopicTests(ReplyTopicTestCase):
         """
         A valid form submission should redirect the user
         """
-        url = reverse('topic_posts', kwargs={'pk': self.board.pk, 'topic_pk': self.topic.pk})
+        url = reverse('boards:topic_posts', kwargs={'pk': self.board.pk, 'topic_pk': self.topic.pk})
         topic_posts_url = '{url}?page=1#2'.format(url=url)
         self.assertRedirects(self.response, topic_posts_url)
 
