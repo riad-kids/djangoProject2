@@ -5,9 +5,9 @@ from django.views.generic import UpdateView, ListView, CreateView
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.urls import reverse
+from django.contrib import messages
 from .models import Board, Topic, Post
 from .forms import NewTopicForm, PostForm
-
 
 """
 def home(request):
@@ -130,6 +130,10 @@ class TopicCreateView(CreateView):
         )
         return redirect('boards:topic_posts', pk=self.kwargs.get('pk'), topic_pk=topic.pk)
 
+    def form_invalid(self, form):
+        messages.add_message(self.request, messages.WARNING, '주제 생성에 실패하였습니다.')
+        return redirect('boards:board_topics', pk=self.kwargs.get('pk'))
+
 
 """
 @login_required
@@ -163,26 +167,34 @@ class ReplyTopicView(CreateView):
     template_name = 'reply_topic.html'
 
     def get_context_data(self, **kwargs):
-        topic = get_object_or_404(Topic, board__pk=self.kwargs.get('pk'), pk=self.kwargs.get('topic_pk'))
-        kwargs['topic'] = topic
+        kwargs['topic'] = self.get_object()
         return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
-        topic = get_object_or_404(Topic, board__pk=self.kwargs.get('pk'), pk=self.kwargs.get('topic_pk'))
         post = form.save(commit=False)
-        post.topic = topic
+        post.topic = self.get_object()
         post.created_by = self.request.user
         post.save()
-        topic.last_updated = timezone.now()
-        topic.save()
+        post.topic.last_updated = timezone.now()
+        post.topic.save()
         topic_url = reverse('boards:topic_posts', kwargs={'pk': self.kwargs.get('pk'),
-                                                   'topic_pk': self.kwargs.get('topic_pk')})
+                                                          'topic_pk': self.kwargs.get('topic_pk')})
         topic_post_url = '{url}?page={page}#{id}'.format(
             url=topic_url,
             id=post.pk,
-            page=topic.get_page_count()
+            page=post.topic.get_page_count()
         )
         return redirect(topic_post_url)
+
+    def form_invalid(self, form):
+        messages.add_message(self.request, messages.WARNING, '답변 등록에 실패하였습니다.')
+        topic_url = reverse('boards:topic_posts', kwargs={'pk': self.kwargs.get('pk'),
+                                                          'topic_pk': self.kwargs.get('topic_pk')})
+        return redirect(topic_url)
+
+    def get_object(self, queryset=None):
+        topic = get_object_or_404(Topic, board__pk=self.kwargs.get('pk'), pk=self.kwargs.get('topic_pk'))
+        return topic
 
 
 @method_decorator(login_required, name='dispatch')
@@ -193,6 +205,11 @@ class PostUpdateView(UpdateView):
     pk_url_kwarg = 'post_pk'
     context_object_name = 'post'
 
+    def get_url(self):
+        topic_url = reverse('boards:topic_posts', kwargs={'pk': self.kwargs.get('pk'),
+                                                          'topic_pk': self.kwargs.get('topic_pk')})
+        return redirect(topic_url)
+
     def get_queryset(self):
         queryset = super().get_queryset()
         return queryset.filter(created_by=self.request.user)
@@ -202,4 +219,8 @@ class PostUpdateView(UpdateView):
         post.updated_by = self.request.user
         post.updated_at = timezone.now()
         post.save()
-        return redirect('boards:topic_posts', pk=post.topic.board.pk, topic_pk=post.topic.pk)
+        return self.get_url()
+
+    def form_invalid(self, form):
+        messages.add_message(self.request, messages.WARNING, '답변 수정에 실패하였습니다.')
+        return self.get_url()
