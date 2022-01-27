@@ -151,3 +151,4 @@ dump_for_10_1.sql
 
 # Node Dependency directories
 node_modules/
+secrets.json
